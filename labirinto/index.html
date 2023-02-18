@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Emoji Editor</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta charset="utf-8"/>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Macondo&display=swap');
+
+            dialog, select {
+                font-size: 2rem;
+                font-family: sansserif;
+                text-align: center;
+            }
+
+            button {
+                background-color: green;
+                color: white;
+                text-shadow: 1px 1px black;
+                font-size: 2rem;
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+            }
+            
+            #controle {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+            
+            #inicio, #jogo {
+                font-family: Macondo;
+                font-size: 4vh;
+                text-align: center;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+            }
+            #inicio {
+                background-color: black;
+                color: white;
+            }
+            #jogo {
+                background-color: purple;
+                color: white;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="inicio">
+            <h1>
+                Labirinto
+            </h1>
+            <button onclick="exibeForm()">
+                &#9654;
+            </button>
+        </div>
+
+        <dialog id="emojiForm">
+            Tom de pele<br>
+            <select id="pele" oninput="atualizaEmoji()">
+                <option value="">&#x1F44A;</option>
+                <option value="&#127999;">&#x1F44A;&#127999;</option>
+                <option value="&#127998;">&#x1F44A;&#127998;</option>
+                <option value="&#127997;">&#x1F44A;&#127997;</option>
+                <option value="&#127996;">&#x1F44A;&#127996;</option>
+                <option value="&#127995;">&#x1F44A;&#127995;</option>
+            </select>
+            <br><br>
+
+            Gênero<br>
+            <select id="genero" oninput="atualizaEmoji()">
+                <option value="&#x200D;&#x2640;&#xFE0F;">&#x2640;Feminino</option>
+                <option value="&#x200D;&#x2642;&#xFE0F;">&#x2642;Masculino</option>
+            </select>
+            <br><br>
+
+            Modelo<br>
+            <select id="modelo" oninput="atualizaEmoji()">
+                <option value="&#x1F9B9;">&#x1F9B9;</option>
+                <option value="&#x1F46E;">&#x1F46E;</option>
+                <option value="&#x1F575;">&#x1F575;</option>
+                <option value="&#x1F9B8;">&#x1F9B8;</option>
+                <option value="&#x1F9D9;">&#x1F9D9;</option>
+                <option value="&#x1F9DA;">&#x1F9DA;</option>
+            </select>
+            <br><br>
+
+            <span id="emoji"></span>
+            
+            <br><br>
+            <button onclick="fechaForm()">&#x2714;&#xFE0F;</button>
+        </dialog>
+
+        <div id="jogo">
+            <button onclick="exibeInicio()">&#9664;</button>
+            <table align="center" id="labirinto">
+            </table>
+            <div id="controle">
+                <button onclick="moveJogador(0,-1)">&#9650;</button><br>
+                <button onclick="moveJogador(-1,0)">&#9664;</button>
+                <button onclick="moveJogador(0,1)">&#9660;</button>
+                <button onclick="moveJogador(1,0)">&#9654;</button>
+            </div>
+        </div>
+
+        <script>
+            var cenario = [
+                "",
+                "&#x1F9F1;",
+                "&#x1F36C;"
+            ];
+            
+            var labirinto = null;
+            var labirintoModelo = [
+                [1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,1],
+                [1,2,1,2,1,2,1,2,1,2,1],
+                [1,0,0,0,0,0,0,0,0,0,1],
+                [1,2,1,2,1,2,1,2,1,2,1],
+                [1,0,0,0,0,0,0,0,0,0,1],
+                [1,2,1,2,1,2,1,2,1,2,1],
+                [1,0,0,0,0,0,0,0,0,0,1],
+                [1,2,1,2,1,2,1,2,1,2,1],
+                [1,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1]
+            ];
+            
+            var personagens = null;
+            var personagensModelo = [
+                {modelo: "", x: 1, y: 1},
+                {modelo: "&#x1F47E;", x: 5, y: 5},
+                {modelo: "&#x1F47E;", x: 9, y: 9}
+            ];
+
+            function desenha() {
+                personagens[0].modelo = document.querySelector("#emoji").innerHTML;
+                var t = "";
+                for(var i = 0; i < labirinto.length; i++){
+                    t += "<tr>";
+                    for(var j = 0; j < labirinto[i].length; j++){
+                        t += "<td id='d"+i+j+"'>"+cenario[labirinto[i][j]];
+                    }
+                }
+                document.querySelector("#labirinto").innerHTML = t;
+                for(var p of personagens){
+                    document.querySelector("#d"+p.y+p.x).innerHTML = p.modelo;
+                }
+            }
+
+            function exibeInicio() {
+                document.querySelector("#inicio").style.display = "block";
+                document.querySelector("#jogo").style.display = "none";
+            }
+
+            function exibeJogo() {
+                document.querySelector("#inicio").style.display = "none";
+                document.querySelector("#jogo").style.display = "block";
+                labirinto = JSON.parse(JSON.stringify(labirintoModelo));
+                personagens = JSON.parse(JSON.stringify(personagensModelo));
+                desenha();
+            }
+
+            function atualizaEmoji() {
+                var pele = document.querySelector("#pele").value;
+                var genero = document.querySelector("#genero").value;
+                var modelo = document.querySelector("#modelo").value;
+                
+                document.querySelector("#emoji").innerHTML = modelo+pele+genero;
+            }
+            
+            function exibeForm() {
+                atualizaEmoji();
+                document.querySelector("#emojiForm").showModal();
+            }
+            
+            function fechaForm() {
+                document.querySelector("#emojiForm").close();
+                exibeJogo();
+            }
+
+            function move(p, x, y) {
+                if(labirinto[p.y+y][p.x+x] !== 1) {
+                    p.x += x;
+                    p.y += y;
+                    desenha();
+                }
+            }
+            
+            function moveJogador(x, y) {
+                var j = personagens[0];
+                move(j, x, y);
+                if(labirinto[j.y][j.x] === 2) {
+                    labirinto[j.y][j.x] = 0;
+                }
+                for(var i = 1; i < personagens.length; i++){
+                    var o = personagens[i];
+                    var pos = parseInt(Math.random()*2);
+                    if(pos === 0) {
+                        if(j.x > o.x) move(o, 1, 0);
+                        else move(o, -1, 0);
+                    } else {
+                        if(j.y > o.y) move(o, 0, 1);
+                        else move(o, 0, -1);
+                    }
+                    
+                    if(j.x === o.x && j.y === o.y) {
+                        alert("Game Over");
+                        exibeInicio();
+                    }
+                }
+            }
+            
+            exibeInicio();
+        </script>
+    </body>
+</html>
